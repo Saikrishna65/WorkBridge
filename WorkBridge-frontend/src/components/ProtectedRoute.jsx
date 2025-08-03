@@ -1,23 +1,37 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 
 const ProtectedRoute = ({ role, children }) => {
-  const { user, isAuthenticated, loading } = useAppContext();
+  const { user, loading } = useAppContext();
+  const location = useLocation();
 
   if (loading) return null;
 
-  // Not logged in at all
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" />;
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
 
   if (role && user?.role !== role) {
-    return user.role === "freelancer" ? (
-      <Navigate to="/freelancer/complete-profile" />
-    ) : (
-      <Navigate to="/" />
-    );
+    return <Navigate to="/" replace />;
+  }
+
+  if (user?.role === "freelancer") {
+    const profileComplete = user.profileCompleted;
+
+    if (
+      !profileComplete &&
+      location.pathname !== "/freelancer/complete-profile"
+    ) {
+      return <Navigate to="/freelancer/complete-profile" replace />;
+    }
+
+    if (
+      profileComplete &&
+      location.pathname === "/freelancer/complete-profile"
+    ) {
+      return <Navigate to="/freelancer/dashboard" replace />;
+    }
   }
 
   return children;

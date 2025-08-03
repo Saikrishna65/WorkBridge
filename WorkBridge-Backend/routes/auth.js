@@ -21,12 +21,6 @@ router.post("/refresh", authController.refreshToken);
 router.post("/logout", authController.logout);
 
 // Protected route (works for both users & freelancers)
-router.get("/me", protect, (req, res) => {
-  res.json({
-    id: req.user.id,
-    email: req.user.email,
-    role: req.user.role,
-  });
-});
+router.get("/me", protect, authController.fetchUser);
 
 module.exports = router;

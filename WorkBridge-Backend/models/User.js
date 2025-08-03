@@ -1,30 +1,84 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema(
+// Sub-schema for individual message
+const MessageSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: {
+    senderId: {
       type: String,
       required: true,
     },
-    role: { type: String, default: "freelancer" },
-    refreshToken: String,
+    receiverId: {
+      type: String,
+      required: true,
+    },
+    message: {
+      type: String,
+      default: "",
+    },
+    fileUrl: {
+      type: String,
+      default: null,
+    },
+    read: Boolean,
+    time: {
+      type: Date,
+      default: Date.now,
+    },
   },
-
-  {
-    timestamps: true,
-  }
+  { _id: false } // Optional: disables auto _id for each message
 );
 
-module.exports = mongoose.model("User", userSchema);
+// Sub-schema for individual chat session
+const ChatSchema = new mongoose.Schema(
+  {
+    chatId: {
+      type: String,
+      required: true, // e.g., "client_101_freelancer_22"
+    },
+    freelancerId: {
+      type: String,
+      required: true,
+    },
+    freelancerName: {
+      type: String,
+      required: true,
+    },
+    freelancerAvatar: {
+      type: String,
+      default: "",
+    },
+    messages: [MessageSchema],
+  },
+  { _id: false } // Optional
+);
+
+// Main client schema
+const UserSchema = new mongoose.Schema({
+  // Basic profile
+  name: {
+    type: String,
+    required: true,
+  },
+
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
+  avatar: {
+    type: String,
+    default: "",
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+
+  role: { type: String, default: "user" },
+  refreshToken: String,
+
+  chats: [ChatSchema],
+});
+
+module.exports = mongoose.model("User", UserSchema);

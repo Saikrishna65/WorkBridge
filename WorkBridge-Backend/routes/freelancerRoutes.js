@@ -1,21 +1,36 @@
 const express = require("express");
 const router = express.Router();
-const { completeProfile } = require("../controllers/freelancerController");
-const { protect } = require("../middleware/authMiddleware");
+const multer = require("multer");
+const { storage } = require("../utils/cloudinary");
+const upload = multer({ storage });
 
-// Only a logged-in freelancer can update their profile
-router.patch(
-  "/profile",
+const {
+  completeProfile,
+  updateFreelancerProfile,
+} = require("../controllers/freelancerController");
+const { protect } = require("../middleware/authMiddleware");
+const { getFreelancerReviews } = require("../controllers/reviewController");
+
+router.post(
+  "/complete-profile",
   protect,
-  (req, res, next) => {
-    if (req.user.role !== "freelancer") {
-      return res
-        .status(403)
-        .json({ message: "Only freelancers can update profiles" });
-    }
-    next();
-  },
+  upload.fields([
+    { name: "avatar", maxCount: 1 },
+    { name: "works", maxCount: 10 },
+  ]),
   completeProfile
 );
+
+router.post(
+  "/update-profile",
+  protect,
+  upload.fields([
+    { name: "avatar", maxCount: 1 },
+    { name: "works", maxCount: 10 },
+  ]),
+  updateFreelancerProfile
+);
+
+router.get("/reviews", protect, getFreelancerReviews);
 
 module.exports = router;

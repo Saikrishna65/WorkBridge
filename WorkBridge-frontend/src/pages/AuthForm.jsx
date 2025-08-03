@@ -3,7 +3,7 @@ import { useAppContext } from "../context/AppContext";
 import { Mail, Lock, User, CheckCircle, XCircle } from "lucide-react";
 
 const AuthForm = () => {
-  const { login, register, logout, isAuthenticated, user } = useAppContext();
+  const { login, register, isAuthenticated, user } = useAppContext();
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState([]);
@@ -226,21 +226,6 @@ const AuthForm = () => {
               </span>
             </p>
           </form>
-
-          {/* Show logout only if logged in */}
-          {isAuthenticated && (
-            <div className="text-center mt-4">
-              <p className="text-sm mb-2 text-gray-700">
-                Logged in as <strong>{user?.email}</strong>
-              </p>
-              <button
-                onClick={logout}
-                className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition"
-              >
-                Logout
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

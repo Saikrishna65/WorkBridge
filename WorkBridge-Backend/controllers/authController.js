@@ -144,16 +144,40 @@ exports.login = async (req, res, next) => {
     user.refreshToken = refreshToken;
     await user.save();
 
-    res.json({
-      accessToken,
-      refreshToken,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role,
-      },
-    });
+    if (user.role === "freelancer") {
+      return res.json({
+        accessToken,
+        refreshToken,
+        freelancer: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          skills: user.skills,
+          categories: user.categories,
+          experience: user.experience,
+          availability: user.availability,
+          hourlyRate: user.hourlyRate,
+          role: user.role,
+          // location: user.location,
+          // languages: user.languages,
+          // education: user.education,
+          // certifications: user.certifications,
+          // socialLinks: user.socialLinks,
+          profileCompleted: user.profileCompleted,
+        },
+      });
+    } else {
+      return res.json({
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role,
+        },
+      });
+    }
   } catch (err) {
     next(err);
   }
@@ -188,6 +212,25 @@ exports.refreshToken = async (req, res, next) => {
   }
 };
 
+// ==================== FETCH CURRENT USER ====================
+exports.fetchUser = async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User fetched successfully",
+      user, // already has password excluded
+    });
+  } catch (err) {
+    console.error("Fetch user error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+a;
 // ==================== LOGOUT ====================
 exports.logout = async (req, res, next) => {
   const { token } = req.body;

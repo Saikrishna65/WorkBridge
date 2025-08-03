@@ -4,12 +4,23 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 
 const categories = [
-  "UI/UX Designer",
+  "Design",
+  "Branding",
+  "Web Design",
+  "Frontend",
+  "Programming",
+  "Backend",
   "Web Development",
-  "Video Editing",
   "Animation",
+  "Video Editing",
+  "Content Creation",
   "Marketing",
+  "Ads",
+  "Strategy",
+  "SEO",
+  "Analytics",
 ];
+
 const availabilityOptions = [
   "Full-time",
   "Part-time",
@@ -30,7 +41,8 @@ const roundToNearest = (value, step = 10000) => {
 };
 
 const FilterSidebar = ({ onFilter }) => {
-  const [category, setCategory] = useState("UI/UX Design");
+  const [category, setCategory] = useState("design");
+
   const [availability, setAvailability] = useState("Full-time");
   const [salaryRange, setSalaryRange] = useState([1000, 3000]);
   const [expRange, setExpRange] = useState([1, 3]);
@@ -50,7 +62,7 @@ const FilterSidebar = ({ onFilter }) => {
     const resetSkills = [];
 
     // Reset local state
-    setCategory("UI/UX Design");
+    setCategory("design");
     setAvailability("Full-time");
     setSalaryRange([1000, 3000]);
     setExpRange([1, 3]);

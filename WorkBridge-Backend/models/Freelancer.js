@@ -1,53 +1,95 @@
 const mongoose = require("mongoose");
 
-const freelancerSchema = new mongoose.Schema(
+// Message sub-schema
+const MessageSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
-    password: { type: String, required: true },
-    role: { type: String, default: "freelancer" },
-    refreshToken: String,
-
-    // Profile fields
-    username: { type: String, unique: true, sparse: true, trim: true },
-    bio: { type: String, maxlength: 300 },
-    skills: [String],
-    categories: [String],
-    experience: String,
-    availability: String,
-    hourlyRate: { type: Number, min: 0 },
-    location: String,
-    languages: [String],
-    education: [
-      {
-        institution: String,
-        degree: String,
-        year: Number,
-      },
-    ],
-    certifications: [
-      {
-        title: String,
-        issuer: String,
-        year: Number,
-      },
-    ],
-    socialLinks: {
-      linkedin: String,
-      github: String,
-      portfolio: String,
-    },
-
-    // Visibility control
-    profileCompleted: { type: Boolean, default: false },
+    senderId: { type: String, required: true },
+    receiverId: { type: String, required: true },
+    message: { type: String, default: "" },
+    fileUrl: { type: String, default: null },
+    read: Boolean,
+    time: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { _id: false }
 );
 
-module.exports = mongoose.model("Freelancer", freelancerSchema);
+// Chat sub-schema
+const ChatSchema = new mongoose.Schema(
+  {
+    chatId: { type: String, required: true },
+    clientId: { type: String, required: true },
+    clientName: { type: String, required: true },
+    clientAvatar: { type: String, default: "" },
+    messages: [MessageSchema],
+  },
+  { _id: false }
+);
+
+// Review sub-schema with reference to Client
+const ReviewSchema = new mongoose.Schema(
+  {
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Client",
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 5,
+    },
+    comment: {
+      type: String,
+    },
+  },
+  { timestamps: true, _id: false }
+);
+
+// Service sub-schema
+const ServiceSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    category: { type: String },
+    price: { type: Number, required: true },
+    revisions: { type: Number, default: 0 },
+    deadline: { type: String },
+    description: { type: String },
+  },
+  { _id: false }
+);
+
+// Main freelancer schema
+const FreelancerSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  title: { type: String, default: "" },
+  experience: { type: Number, default: 0 },
+  type: {
+    type: String,
+    enum: ["full-time", "part-time", "freelancer", "project-work"], // ✅ fix
+  },
+  earnings: { type: Number, default: 0 },
+  reviews: [ReviewSchema],
+  avatar: { type: String, default: "" },
+  skills: [String],
+  services: [ServiceSchema],
+  works: [String], // Portfolio images or URLs
+  chats: [ChatSchema],
+  joinedAt: { type: Date, default: Date.now },
+  role: { type: String, default: "freelancer" },
+  refreshToken: String,
+  profileCompleted: { type: Boolean, default: false },
+});
+
+module.exports = mongoose.model("Freelancer", FreelancerSchema);
