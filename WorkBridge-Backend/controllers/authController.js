@@ -230,7 +230,7 @@ exports.fetchUser = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-a;
+
 // ==================== LOGOUT ====================
 exports.logout = async (req, res, next) => {
   const { token } = req.body;

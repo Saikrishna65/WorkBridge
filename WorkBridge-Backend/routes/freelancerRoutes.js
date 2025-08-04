@@ -7,6 +7,7 @@ const upload = multer({ storage });
 const {
   completeProfile,
   updateFreelancerProfile,
+  getFreelancerDashboardSummary,
 } = require("../controllers/freelancerController");
 const { protect } = require("../middleware/authMiddleware");
 const { getFreelancerReviews } = require("../controllers/reviewController");
@@ -30,6 +31,8 @@ router.post(
   ]),
   updateFreelancerProfile
 );
+
+router.get("/dashboard-summary/:id", getFreelancerDashboardSummary);
 
 router.get("/reviews", protect, getFreelancerReviews);
 

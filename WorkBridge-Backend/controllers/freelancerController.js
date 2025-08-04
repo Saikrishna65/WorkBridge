@@ -1,4 +1,6 @@
+const { default: mongoose } = require("mongoose");
 const Freelancer = require("../models/Freelancer");
+const project = require("../models/project");
 
 exports.completeProfile = async (req, res) => {
   try {
@@ -122,5 +124,80 @@ exports.updateFreelancerProfile = async (req, res) => {
   } catch (err) {
     console.error("❌ Profile update error:", err);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.getFreelancerDashboardSummary = async (req, res) => {
+  try {
+    const { id } = req.params; // freelancer ID
+    const freelancerId = new mongoose.Types.ObjectId(id);
+
+    // Check if freelancer exists
+    const freelancer = await Freelancer.findById(freelancerId);
+    if (!freelancer) {
+      return res.status(404).json({ message: "Freelancer not found" });
+    }
+
+    // ✅ Get projects assigned to this freelancer
+    const assignedProjects = await project.find({ assignedTo: freelancerId });
+
+    const completed = assignedProjects.filter(
+      (p) => p.state === "completed"
+    ).length;
+    const active = assignedProjects.filter(
+      (p) => p.state === "assigned" || p.state === "in-progress"
+    ).length;
+    const cancelled = assignedProjects.filter(
+      (p) => p.state === "cancelled"
+    ).length;
+
+    const total = completed + active + cancelled;
+    const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    const totalEarnings = assignedProjects
+      .filter((p) => p.state !== "cancelled")
+      .reduce((sum, p) => sum + p.budget, 0);
+
+    const withdrawable = totalEarnings * 0.75;
+    const pending = totalEarnings * 0.25;
+
+    // ✅ Count proposals this freelancer has sent (appeared in `interested`)
+    const proposalCount = await project.countDocuments({
+      "interested.client": freelancerId,
+    });
+
+    // ✅ Nearest upcoming deadline from assigned projects
+    const upcoming = assignedProjects
+      .filter((p) => p.state === "assigned" || p.state === "in-progress")
+      .sort((a, b) => {
+        const aDeadline =
+          new Date(a.createdAt).getTime() + a.deadline * 86400000;
+        const bDeadline =
+          new Date(b.createdAt).getTime() + b.deadline * 86400000;
+        return aDeadline - bDeadline;
+      })[0];
+
+    const deadlineDate = upcoming
+      ? new Date(upcoming.createdAt.getTime() + upcoming.deadline * 86400000)
+      : new Date(Date.now() + 3 * 86400000); // dummy
+
+    const countdownSeconds = Math.max(0, (deadlineDate - new Date()) / 1000);
+
+    res.json({
+      name: freelancer.name,
+      skills: freelancer.skills || [],
+      proposalsSent: proposalCount,
+      completed,
+      active,
+      cancelled,
+      successRate,
+      totalEarnings,
+      withdrawable,
+      pending,
+      countdownSeconds,
+    });
+  } catch (err) {
+    console.error("Dashboard summary error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
